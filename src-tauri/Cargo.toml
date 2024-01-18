@@ -2,7 +2,7 @@
 name = "notetray"
 version = "0.0.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = ["Marden Rafael"]
 license = ""
 repository = ""
 edition = "2021"
