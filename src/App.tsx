@@ -1,7 +1,10 @@
 function App() {
   return (
-    <div className="border border-red-500">
-      <p>Tetste</p>
+    <div className="h-screen w-screen">
+      <textarea
+        className="w-full h-full p-2"
+        defaultValue="Sua nota..."
+      ></textarea>
     </div>
   );
 }
