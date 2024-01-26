@@ -1,10 +1,40 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use serde::{Deserialize, Serialize};
 use tauri::{
-    CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+    CustomMenuItem, Manager, Runtime, SystemTray, SystemTrayEvent, SystemTrayMenu,
+    SystemTrayMenuItem,
 };
-use tauri_plugin_positioner::{Position, WindowExt};
+
+#[derive(Serialize, Deserialize)]
+struct NotePayload<'a> {
+    name: &'a str,
+}
+
+#[tauri::command]
+async fn create_note<R: Runtime>(
+    handle: tauri::AppHandle<R>,
+    note_payload: NotePayload<'_>,
+) -> Result<(), ()> {
+    match tauri::WindowBuilder::new(
+        &handle,
+        note_payload.name,
+        tauri::WindowUrl::App("/note/".into()),
+    )
+    .title(note_payload.name)
+    .always_on_top(true)
+    .focused(true)
+    .inner_size(400.0, 300.0)
+    .resizable(false)
+    .build()
+    {
+        Ok(_) => todo!("Adicionar ao noteManager"),
+        Err(_) => todo!("Tratar erro de forma correta"),
+    }
+
+    // Ok(())
+}
 
 fn main() {
     let quit = CustomMenuItem::new("quit", "Sair");
@@ -17,8 +47,8 @@ fn main() {
 
     let tray = SystemTray::new().with_menu(tray_menu);
 
-    let app = tauri::Builder::default()
-        .plugin(tauri_plugin_positioner::init())
+    let _ = tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![create_note])
         .on_system_tray_event(
             |app: &tauri::AppHandle, event: SystemTrayEvent| match event {
                 SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
@@ -27,7 +57,6 @@ fn main() {
                     }
                     "open" => {
                         let window = app.get_window("main").unwrap();
-                        let _ = window.move_window(Position::TopRight);
                         window.show().unwrap();
                     }
                     _ => {}
@@ -37,14 +66,16 @@ fn main() {
         )
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
-                event.window().hide().unwrap();
-                api.prevent_close();
+                let window_label = event.window().label();
+
+                if window_label == "main" {
+                    event.window().hide().unwrap();
+                    api.prevent_close();
+                }
             }
             _ => {}
         })
         .system_tray(tray)
-        .build(tauri::generate_context!())
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
-
-    app.run(|_, _| {});
 }

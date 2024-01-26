@@ -37,12 +37,12 @@
         "fullscreen": false,
         "resizable": false,
         "title": "notetray",
-        "closable": true,
-        "width": 400,
-        "height": 300,
+        "width": 300,
+        "height": 400,
         "theme": "Dark",
         "visible": false,
-        "alwaysOnTop": true
+        "alwaysOnTop": true,
+        "decorations": true
       }
     ],
     "systemTray": {
